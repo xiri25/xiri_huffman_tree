@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 static struct char_freq* _char_freq_buffer_alloc(const uint16_t buffer_size)
 {
@@ -32,6 +33,19 @@ static uint16_t _char_freq_buffer_max_freq_idx(const struct char_freq* buffer, c
     }
 
     return max_freq_idx;
+}
+
+static void _char_freq_print(const struct char_freq freq)
+{
+    /*
+    const char line_break = '\n';
+    if (freq.c == line_break) {
+        printf("'\\n': %lu\n", freq.freq);
+    } else {
+        printf("'%c': %lu\n", freq.c, freq.freq);
+    }
+    */
+    printf("%d: %lu\n", freq.c, freq.freq);
 }
 
 struct char_freq* char_freq_buffer_alloc()
@@ -82,19 +96,18 @@ void char_freq_buffer_create(struct char_freq* freq_buffer, const uint8_t* char_
     }
 }
 
-static void _char_freq_print(const struct char_freq freq)
-{
-    const char line_break = '\n';
-    if (freq.c == line_break) {
-        printf("'\\n': %lu\n", freq.freq);
-    } else {
-        printf("'%c': %lu\n", freq.c, freq.freq);
-    }
-}
-
 void char_freq_buffer_print(const struct char_freq* buffer, const uint64_t buffer_size)
 {
     for (uint64_t i = 0; i < buffer_size; i++) {
         _char_freq_print(buffer[i]);
+    }
+}
+
+void char_freq_buffer_print_truncated(const struct char_freq* buffer, const uint64_t buffer_size)
+{
+    for (uint64_t i = 0; i < buffer_size; i++) {
+        if (buffer[i].freq > 0) {
+            _char_freq_print(buffer[i]);
+        }
     }
 }

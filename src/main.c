@@ -13,7 +13,7 @@ void print_bits_form_uint8_t(const uint8_t byte)
 
 int main(void)
 {
-    const char* filename = "hola.txt";
+    const char* filename = "main";
     struct file_t file = {};
     file_open(&file, filename);
 
@@ -22,18 +22,28 @@ int main(void)
 
     file_read_to_uint8_t_buffer(&file, buffer, chars_to_read);
 
+    /*
     for (uint32_t i = 0; i < chars_to_read; i++) {
-        // NOTE: Can print a new line
-        printf("%c: ", buffer[i]); // Esto provoca un cast (movzx)
+        const char line_break = '\n';
+        if (buffer[i] == line_break) {
+            printf("\\n: ");
+        } else {
+            printf("%c: ", buffer[i]); // Esto provoca un cast (movzx)
+        }
 
         print_bits_form_uint8_t(buffer[i]);
         printf("\n");
     }
 
+    printf("\nFrequencies:\n");
+    */
+
     struct char_freq* frequencies = char_freq_buffer_alloc();
     char_freq_buffer_create(frequencies, buffer, chars_to_read);
+    //char_freq_buffer_print(frequencies, UINT8_MAX + 1);
+
     struct char_freq* sorted_freq = char_freq_buffer_sorted(frequencies);
-    char_freq_buffer_print(sorted_freq, chars_to_read);
+    char_freq_buffer_print_truncated(sorted_freq, UINT8_MAX + 1);
 
     char_freq_buffer_free(frequencies);
     char_freq_buffer_free(sorted_freq);
