@@ -4,7 +4,8 @@ LDFLAGS=-g -O2
 INCLUDE_DIRS=src/include/
 SRC_FILES=src/main.c \
 		  src/file/file.c \
-		  src/frequencies/frequencies.c
+		  src/frequencies/frequencies.c \
+		  src/huffman_tree/huffman_tree.c
 
 .PHONY: all clean
 
