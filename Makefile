@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-Wall -Wextra
-LDFLAGS=-g
+LDFLAGS=-g -O2
 INCLUDE_DIRS=src/include/
 SRC_FILES=src/main.c \
 		  src/file/file.c \

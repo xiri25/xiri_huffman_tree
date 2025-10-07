@@ -64,7 +64,7 @@ void char_freq_buffer_free(const struct char_freq* buffer)
     free((void*)buffer);
 }
 
-// TODO: This is very slow
+// TODO: This is very slow, maybe alloc fuera
 struct char_freq* char_freq_buffer_sorted(struct char_freq* buffer)
 {
     ASSERT(buffer != NULL);
