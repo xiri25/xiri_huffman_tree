@@ -48,6 +48,7 @@ static void _char_freq_print(const struct char_freq freq)
     printf("%d: %lu\n", freq.c, freq.freq);
 }
 
+/* TODO: Maybe take the size even if is always the same, idk, like sort */
 struct char_freq* char_freq_buffer_alloc()
 {
     const uint16_t buffer_size = UINT8_MAX + 1;
@@ -64,27 +65,22 @@ void char_freq_buffer_free(const struct char_freq* buffer)
     free((void*)buffer);
 }
 
-// TODO: This is very slow, maybe alloc fuera
-struct char_freq* char_freq_buffer_sorted(struct char_freq* buffer)
+// TODO: This is very slow
+void char_freq_buffer_sort(struct char_freq* old_buffer, struct char_freq* new_buffer, const uint16_t buffer_size)
 {
-    ASSERT(buffer != NULL);
-
-    const uint16_t buffer_size = UINT8_MAX + 1;
-    struct char_freq* sorted_buffer = _char_freq_buffer_alloc(buffer_size);
+    ASSERT(old_buffer != NULL);
+    ASSERT(new_buffer != NULL);
 
     for (uint16_t i = 0; i < buffer_size; i++) {
-        uint16_t old_buffer_idx = _char_freq_buffer_max_freq_idx(buffer, buffer_size);
-        sorted_buffer[i] = buffer[old_buffer_idx];
+        uint16_t old_buffer_idx = _char_freq_buffer_max_freq_idx(old_buffer, buffer_size);
+        new_buffer[i] = old_buffer[old_buffer_idx];
 
         // To not pick this one again
-        buffer[old_buffer_idx].freq = 0;
+        old_buffer[old_buffer_idx].freq = 0;
     }
-
-    return sorted_buffer;
 }
 
-// TODO: Better name
-void char_freq_buffer_create(struct char_freq* freq_buffer, const uint8_t* char_buffer, const uint64_t char_buffer_size)
+void char_freq_buffer_calculate(struct char_freq* freq_buffer, const uint8_t* char_buffer, const uint64_t char_buffer_size)
 {
     ASSERT(freq_buffer != NULL);
     ASSERT(char_buffer != NULL);
