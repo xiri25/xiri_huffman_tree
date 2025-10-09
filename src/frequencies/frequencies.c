@@ -35,6 +35,21 @@ static uint16_t _char_freq_buffer_max_freq_idx(const struct char_freq* buffer, c
     return max_freq_idx;
 }
 
+static uint16_t _char_freq_buffer_min_freq_idx(const struct char_freq* buffer, const uint16_t buffer_size)
+{
+    uint64_t min_freq = UINT64_MAX;
+    uint16_t min_freq_idx = 0;
+
+    for (uint16_t i = 0; i < buffer_size; i++) {
+        if (buffer[i].freq < min_freq) {
+            min_freq = buffer[i].freq;
+            min_freq_idx = i;
+        }
+    }
+
+    return min_freq_idx;
+}
+
 static void _char_freq_print(const struct char_freq freq)
 {
     /*
@@ -66,17 +81,30 @@ void char_freq_buffer_free(const struct char_freq* buffer)
 }
 
 // TODO: This is very slow
-void char_freq_buffer_sort(struct char_freq* old_buffer, struct char_freq* new_buffer, const uint16_t buffer_size)
+void char_freq_buffer_sort(struct char_freq* old_buffer,
+                           struct char_freq* new_buffer,
+                           const uint16_t buffer_size,
+                           const enum sort_order sort_order)
 {
     ASSERT(old_buffer != NULL);
     ASSERT(new_buffer != NULL);
 
-    for (uint16_t i = 0; i < buffer_size; i++) {
-        uint16_t old_buffer_idx = _char_freq_buffer_max_freq_idx(old_buffer, buffer_size);
-        new_buffer[i] = old_buffer[old_buffer_idx];
+    if (sort_order == SORT_DESC) {
+        for (uint16_t i = 0; i < buffer_size; i++) {
+            uint16_t old_buffer_idx = _char_freq_buffer_max_freq_idx(old_buffer, buffer_size);
+            new_buffer[i] = old_buffer[old_buffer_idx];
 
-        // To not pick this one again
-        old_buffer[old_buffer_idx].freq = 0;
+            // To not pick this one again
+            old_buffer[old_buffer_idx].freq = 0;
+        }
+    } else if (sort_order == SORT_ASC) {
+        for (uint16_t i = 0; i < buffer_size; i++) {
+            uint16_t old_buffer_idx = _char_freq_buffer_min_freq_idx(old_buffer, buffer_size);
+            new_buffer[i] = old_buffer[old_buffer_idx];
+
+            // To not pick this one again
+            old_buffer[old_buffer_idx].freq = UINT64_MAX;
+        }
     }
 }
 

@@ -18,7 +18,7 @@ void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* so
     struct char_freq* frequencies = char_freq_buffer_alloc();
     char_freq_buffer_calculate(frequencies, file_buffer, chars_to_read);
 
-    char_freq_buffer_sort(frequencies, sorted_freq_buffer, buffer_size);
+    char_freq_buffer_sort(frequencies, sorted_freq_buffer, buffer_size, SORT_ASC);
 
     char_freq_buffer_free(frequencies);
 
