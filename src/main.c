@@ -6,6 +6,8 @@
 #include <huffman_tree.h>
 #include <memory/arena.h>
 
+#include <ASSERT.h>
+
 #define PRINT_DEBUG(x) printf(x);
 // #define PRINT_DEBUG(x)
 
@@ -44,7 +46,7 @@ void ht_tree_print(const struct ht_node* ht_node) {
 int main(void)
 {
     const char* filepath = "main";
-    // const char* filepath = "/home/xiri/Videos/2025-09-20_11-28-25.mkv"; 9.6Gb En 1s
+    // const char* filepath = "/home/xiri/Videos/2025-09-20_11-28-25.mkv"; // 9.6Gb En 1s
 
     const size_t sorted_freq_len = UINT8_MAX + 1;
     struct char_freq* sorted_freq = char_freq_buffer_alloc();
@@ -55,7 +57,11 @@ int main(void)
 
     arena_t ht_arena = arena_create(8192 * 8);
 
-    size_t ht_tree_size = sizeof(struct ht_node) * sorted_freq_len * 4;
+    /*
+     * NOTE: The tree can be as large as 2*(leaf_nodes) - 1
+     * x + x/2 + x/4 + x/8 ..... + 1
+    */
+    const size_t ht_tree_size = sizeof(struct ht_node) * (sorted_freq_len * 2 - 1);
     struct ht_node* ht_tree = arena_alloc(&ht_arena, ht_tree_size);
 
     PRINT_DEBUG("Creation of the leaf nodes of the tree\n");
@@ -73,13 +79,14 @@ int main(void)
     }
 
     PRINT_DEBUG("Creation of the nodes that are not leaf of the tree\n");
-    uint64_t i = 0; /* idx in the flat tree */
-    uint64_t j = sorted_freq_len;
+    uint64_t i = 0; /* idx of the leaf nodes, they are at the beggining of the array */
+    uint64_t j = sorted_freq_len; /* idx of the rest of the nodes */
     while (ht_nodes_without_parent(ht_tree, j) > 1) {
 
         if ( i == j - 1) {
             /* TODO: is this unreacheable? */
             PRINT_DEBUG(" La i ha llegado al final del arbol\n");
+            ASSERT(0 /* unreacheable? */);
             break;
         }
 
@@ -112,6 +119,9 @@ int main(void)
         j += 1;
         printf("%lu\n", ht_nodes_without_parent(ht_tree, j));
     }
+
+    /* The index of the no leaf nodes should not be greater that the size of the tree */
+    ASSERT(j <= ht_tree_size/sizeof(struct ht_node));
 
     printf("ht_nodes_without_parent = %lu\n", ht_nodes_without_parent(ht_tree, j));
     printf("last i = %lu, last j = %lu\n", i, j);
