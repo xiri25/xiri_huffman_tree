@@ -2,6 +2,11 @@
 #include <ASSERT.h>
 
 /* TODO: Maybe return erros */
+/*
+ * TODO: Rewrite this. Tener en cuenta que no creo que haga falta
+ * tener el seek_ptr , porque struct FILE deberia tener esa
+ * informacion
+*/
 void file_open(struct file_t* file, const char* restrict filepath)
 {
     FILE* f = fopen(filepath, "rb");

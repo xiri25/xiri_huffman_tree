@@ -7,6 +7,10 @@
 
 // struct __attribute__((packed)) huffman_tree_node {
 struct ht_node {
+    /*
+     * TODO: Change pointer por int16_t indexes (-1 for NULL)
+     * Get rid of is_root and is_leaf, maybe create methods to check
+     */
     uint64_t weight;
     struct ht_node* parent_node;
     struct ht_node* left_node;
@@ -17,6 +21,6 @@ struct ht_node {
 };
 
 void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* sorted_freq_buffer, const uint16_t buffer_size);
-void print_ht_node(const struct ht_node* node);
+void ht_node_print(const struct ht_node* node);
 
 #endif // !HUFFMAN_TREE_H

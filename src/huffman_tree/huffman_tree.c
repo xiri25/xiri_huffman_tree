@@ -6,7 +6,7 @@
 #include <string.h>
 
 /* TODO: check if the char is printable (or \n \0...) and print it */
-void print_ht_node(const struct ht_node* node)
+void ht_node_print(const struct ht_node* node)
 {
     char is_root[5] = {};
     if (node->is_root) {

@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -Wno-unused-function -Wconversion
 LDFLAGS=-g -O2
 INCLUDE_DIRS=src/include/
 SRC_FILES=src/main.c \

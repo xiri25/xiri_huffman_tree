@@ -8,6 +8,16 @@
 
 #include <ASSERT.h>
 
+/*
+ * TODO: Deberia crear un diccionario con el huffman_code para cada caracter
+ * y usar ese diccionario para en el encoding y decoding, ahorrandome atravesar
+ * el arbol.
+ * Puede que tambien quiera una implementacion atravesando el arbol para
+ * usar menos memoria RAM
+ * A la hora de crear el diccionario usar Depth‑first leaf‑only traversal
+ * (es recursivo, pero hay manera de hacerlo iterativo)
+*/
+
 #define PRINT_DEBUG(x) printf(x);
 // #define PRINT_DEBUG(x)
 
@@ -19,6 +29,11 @@ void print_bits_form_uint8_t(const uint8_t byte)
 }
 
 /* No se me podia ocurrir una idea peor (creo) */
+/*
+ * Creo que puedo contabilizar cuantos nodos hay sin parent en cada paso
+ * en plan al principio tengo x nodos sin parent, cojo 2 y creo un nuevo
+ * nodo, ahora tengo dos nodos con parent y uno nuevo sin parent
+*/
 uint64_t ht_nodes_without_parent(const struct ht_node* ht_tree, const uint64_t freq_len)
 {
     uint64_t counter = 0;
@@ -37,15 +52,17 @@ void ht_tree_print(const struct ht_node* ht_node) {
     if (ht_node == NULL) return;
 
     printf("%p: ", ht_node);
-    print_ht_node(ht_node);
+    ht_node_print(ht_node);
     ht_tree_print(ht_node->left_node);
     ht_tree_print(ht_node->right_node);
 }
 
 /* Make some texts to make sure that it keeps working throught the changes */
-int main(void)
+int main(int32_t argc, char** argv)
 {
-    const char* filepath = "main";
+    (void)argc;
+    const char* filepath = argv[1];
+    // const char* filepath = "main";
     // const char* filepath = "/home/xiri/Videos/2025-09-20_11-28-25.mkv"; // 9.6Gb En 1s
 
     const size_t sorted_freq_len = UINT8_MAX + 1;
@@ -128,7 +145,7 @@ int main(void)
 
     /* El ultimo nodo es claramente el root_node */
     ht_tree[i].is_root = true;
-    print_ht_node(&ht_tree[i]);
+    ht_node_print(&ht_tree[i]);
 
     printf("the tree is %lu bytes\n", sizeof(struct ht_node) * j);
     printf("the arena is %d bytes\n", 8192 * 8);
@@ -136,7 +153,7 @@ int main(void)
     ht_tree_print(&ht_tree[i]);
 
     arena_destroy(&ht_arena);
-    
+
     char_freq_buffer_free(sorted_freq);
 
     return 0;
