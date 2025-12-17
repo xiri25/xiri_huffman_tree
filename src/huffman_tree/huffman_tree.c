@@ -7,19 +7,35 @@
 #include <stdlib.h>
 #include <string.h>
 
+static bool _is_root(const struct ht_node* node)
+{
+    if (node->parent_node == -1) return true;
+    return false;
+}
+
+static bool _is_leaf(const struct ht_node* node)
+{
+    if ((node->left_node == -1) && (node->right_node == -1)) return true;
+    return false;
+}
+
 /* TODO: check if the char is printable (or \n \0...) and print it */
-void ht_node_print(const struct ht_node* node)
+void ht_node_print(const struct ht_tree* tree, const struct ht_node* node)
 {
     char is_root[5] = {};
-    if (node->is_root) {
+    if (_is_root(node)) {
         strcpy(is_root, "root\0");
     }
-    if (node->is_leaf) {
+    if (_is_leaf(node)) {
         strcpy(is_root, "leaf\0");
     }
-    printf("%d: %lu, p: %p, l: %p, r: %p, %s\n",
-           node->c, node->weight, node->parent_node,
-           node->left_node, node->right_node, is_root);
+    printf("%p / %lu -> %d: %lu, p: (%d / %p), l: (%d / %p), r: (%d / %p), %s\n",
+           node, ((uintptr_t)node - (uintptr_t)tree->tree) / sizeof(struct ht_node),
+           node->c, node->weight,
+           node->parent_node, &tree->tree[node->parent_node],
+           node->left_node, &tree->tree[node->left_node],
+           node->right_node, &tree->tree[node->right_node],
+           is_root);
 }
 
 void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* sorted_freq_buffer, const uint16_t buffer_size)
@@ -57,7 +73,7 @@ uint64_t ht_nodes_without_parent(const struct ht_node* ht_tree, const uint64_t f
         /* A node without weight does not count, bc its not needed */
         if (ht_tree[i].weight == 0) continue;
 
-        if (ht_tree[i].parent_node == NULL) counter += 1;
+        if (ht_tree[i].parent_node == -1) counter += 1;
     }
 
     return counter;
@@ -70,16 +86,20 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
     /* TODO: Tener en cuenta que no hacen falta los nodos cuyo weight es 0 */
     for (uint64_t i = 0; i < sorted_freq_len; i++) {
         struct ht_node node = {
-            .c = sorted_freq[i].c,
-            .weight = sorted_freq[i].freq,
-            .parent_node = NULL,
-            .left_node = NULL,
-            .right_node = NULL,
-            .is_leaf = true,
-            .is_root = false,
+            .c           = sorted_freq[i].c,
+            .weight      = sorted_freq[i].freq,
+            .parent_node = -1,
+            .left_node   = -1,
+            .right_node  = -1,
         };
         tree_buffer[i] = node;
     }
+
+    /*
+     * FIXME: Estoy dejando muchos huecos sin usar al principio del array
+     * el tree es oequeño, por ejemplo con hola.txt no tiene sentido
+     * llegar hasta ~260 nodos
+     */
 
     uint64_t i = 0; /* idx of the leaf nodes, they are at the beggining of the array */
     uint64_t j = sorted_freq_len; /* idx of the rest of the nodes */
@@ -105,18 +125,16 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
         }
 
         struct ht_node new_node = {
-            .c = (unsigned char)0,
-            .weight = less_frequent_node->weight + second_less_frequent_node->weight,
-            .parent_node = NULL,
-            .left_node = less_frequent_node,
-            .right_node = second_less_frequent_node,
-            .is_leaf = false,
-            .is_root = false,
+            .c           = (unsigned char)0,
+            .weight      = less_frequent_node->weight + second_less_frequent_node->weight,
+            .parent_node = -1,
+            .left_node   = (int16_t)i,
+            .right_node  = (int16_t)i + 1,
         };
         /* TODO: Alloc with the arena to make sure it fits, maybe a dynarray its better */
         tree_buffer[j] = new_node;
-        less_frequent_node->parent_node = &tree_buffer[j];
-        second_less_frequent_node->parent_node = &tree_buffer[j];
+        less_frequent_node->parent_node = (int16_t)j;
+        second_less_frequent_node->parent_node = (int16_t)j;
         i += 2;
         j += 1;
     }
@@ -129,7 +147,7 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
 
     const struct ht_tree tree = {
         .tree = tree_buffer,
-        .root = &tree_buffer[i], /* El ultimo nodo es claramente el root_node */
+        .root_idx = (uint16_t)i, /* El ultimo nodo es claramente el root_node */
         .node_count = (uint16_t)i + 1, /* TODO: los indices no necesitan ser uint64_t */
     };
 
@@ -141,12 +159,16 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
 }
 
 /* Pass in the root, pre-order traversal (GePeTo lo dice) */
-void ht_tree_print(const struct ht_node* ht_node)
+/* TODO: Arreglar este desastre */
+void ht_tree_print(const struct ht_tree* tree, const struct ht_node* ht_node)
 {
     if (ht_node == NULL) return;
 
-    printf("%p: ", ht_node);
-    ht_node_print(ht_node);
-    ht_tree_print(ht_node->left_node);
-    ht_tree_print(ht_node->right_node);
+    ht_node_print(tree, ht_node);
+
+    if (ht_node->left_node == -1) return;
+    if (ht_node->right_node == -1) return;
+
+    ht_tree_print(tree, &tree->tree[ht_node->left_node]);
+    ht_tree_print(tree, &tree->tree[ht_node->right_node]);
 }

@@ -51,7 +51,7 @@ int main(int32_t argc, char** argv)
 
     struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree);
 
-    ht_tree_print(tree.root);
+    ht_tree_print(&tree, &tree.tree[tree.root_idx]);
 
     arena_destroy(&ht_arena);
 
