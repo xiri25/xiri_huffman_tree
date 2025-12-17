@@ -36,7 +36,7 @@ int main(int32_t argc, char** argv)
 
     const size_t sorted_freq_len = UINT8_MAX + 1;
     struct char_freq* sorted_freq = char_freq_buffer_alloc();
-    huffman_tree_calc_freq_from_file(filepath, sorted_freq, sorted_freq_len);
+    huffman_tree_calc_freq_from_file(filepath, sorted_freq, (uint16_t)sorted_freq_len);
 
     char_freq_buffer_print_truncated(sorted_freq, sorted_freq_len);
 
@@ -51,7 +51,7 @@ int main(int32_t argc, char** argv)
 
     struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree);
 
-    ht_tree_print(&tree, &tree.tree[tree.root_idx]);
+    ht_tree_print_without_pointers(&tree, &tree.tree[tree.root_idx]);
 
     arena_destroy(&ht_arena);
 

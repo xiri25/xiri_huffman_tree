@@ -26,10 +26,10 @@ struct ht_tree {
 };
 
 void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* sorted_freq_buffer, const uint16_t buffer_size);
-uint64_t ht_nodes_without_parent(const struct ht_node* ht_tree, const uint64_t freq_len);
 struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                                    const size_t sorted_freq_len,
                                    struct ht_node* tree_buffer);
 void ht_tree_print(const struct ht_tree* tree, const struct ht_node* ht_node);
+void ht_tree_print_without_pointers(const struct ht_tree* tree, const struct ht_node* ht_node);
 
 #endif // !HUFFMAN_TREE_H
