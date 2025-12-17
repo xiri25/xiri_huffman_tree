@@ -28,48 +28,16 @@ void print_bits_form_uint8_t(const uint8_t byte)
     }
 }
 
-/* No se me podia ocurrir una idea peor (creo) */
-/*
- * Creo que puedo contabilizar cuantos nodos hay sin parent en cada paso
- * en plan al principio tengo x nodos sin parent, cojo 2 y creo un nuevo
- * nodo, ahora tengo dos nodos con parent y uno nuevo sin parent
-*/
-uint64_t ht_nodes_without_parent(const struct ht_node* ht_tree, const uint64_t freq_len)
-{
-    uint64_t counter = 0;
-    for (uint64_t i = 0; i < freq_len; i++) {
-        /* A node without weight does not count, bc its not needed */
-        if (ht_tree[i].weight == 0) continue;
-
-        if (ht_tree[i].parent_node == NULL) counter += 1;
-    }
-
-    return counter;
-}
-
-/* Pass in the root, pre-order traversal (GePeTo lo dice) */
-void ht_tree_print(const struct ht_node* ht_node) {
-    if (ht_node == NULL) return;
-
-    printf("%p: ", ht_node);
-    ht_node_print(ht_node);
-    ht_tree_print(ht_node->left_node);
-    ht_tree_print(ht_node->right_node);
-}
-
 /* Make some texts to make sure that it keeps working throught the changes */
 int main(int32_t argc, char** argv)
 {
     (void)argc;
     const char* filepath = argv[1];
-    // const char* filepath = "main";
-    // const char* filepath = "/home/xiri/Videos/2025-09-20_11-28-25.mkv"; // 9.6Gb En 1s
 
     const size_t sorted_freq_len = UINT8_MAX + 1;
     struct char_freq* sorted_freq = char_freq_buffer_alloc();
     huffman_tree_calc_freq_from_file(filepath, sorted_freq, sorted_freq_len);
 
-    PRINT_DEBUG("Print frequencies truncated\n");
     char_freq_buffer_print_truncated(sorted_freq, sorted_freq_len);
 
     arena_t ht_arena = arena_create(8192 * 8);
@@ -81,76 +49,9 @@ int main(int32_t argc, char** argv)
     const size_t ht_tree_size = sizeof(struct ht_node) * (sorted_freq_len * 2 - 1);
     struct ht_node* ht_tree = arena_alloc(&ht_arena, ht_tree_size);
 
-    PRINT_DEBUG("Creation of the leaf nodes of the tree\n");
-    for (uint64_t i = 0; i < sorted_freq_len; i++) {
-        struct ht_node node = {
-            .c = sorted_freq[i].c,
-            .weight = sorted_freq[i].freq,
-            .parent_node = NULL,
-            .left_node = NULL,
-            .right_node = NULL,
-            .is_leaf = true,
-            .is_root = false,
-        };
-        ht_tree[i] = node;
-    }
+    struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree);
 
-    PRINT_DEBUG("Creation of the nodes that are not leaf of the tree\n");
-    uint64_t i = 0; /* idx of the leaf nodes, they are at the beggining of the array */
-    uint64_t j = sorted_freq_len; /* idx of the rest of the nodes */
-    while (ht_nodes_without_parent(ht_tree, j) > 1) {
-
-        if ( i == j - 1) {
-            /* TODO: is this unreacheable? */
-            PRINT_DEBUG(" La i ha llegado al final del arbol\n");
-            ASSERT(0 /* unreacheable? */);
-            break;
-        }
-
-        struct ht_node* less_frequent_node = &ht_tree[i];
-        struct ht_node* second_less_frequent_node = &ht_tree[i + 1];
-
-        if (less_frequent_node->weight == 0) {
-            i += 1;
-            continue;
-        }
-        if (second_less_frequent_node->weight == 0) {
-            i += 2;
-            continue;
-        }
-
-        struct ht_node new_node = {
-            .c = (unsigned char)0,
-            .weight = less_frequent_node->weight + second_less_frequent_node->weight,
-            .parent_node = NULL,
-            .left_node = less_frequent_node,
-            .right_node = second_less_frequent_node,
-            .is_leaf = false,
-            .is_root = false,
-        };
-        /* TODO: Alloc with the arena to make sure it fits, maybe a dynarray its better */
-        ht_tree[j] = new_node;
-        less_frequent_node->parent_node = &ht_tree[j];
-        second_less_frequent_node->parent_node = &ht_tree[j];
-        i += 2;
-        j += 1;
-        printf("%lu\n", ht_nodes_without_parent(ht_tree, j));
-    }
-
-    /* The index of the no leaf nodes should not be greater that the size of the tree */
-    ASSERT(j <= ht_tree_size/sizeof(struct ht_node));
-
-    printf("ht_nodes_without_parent = %lu\n", ht_nodes_without_parent(ht_tree, j));
-    printf("last i = %lu, last j = %lu\n", i, j);
-
-    /* El ultimo nodo es claramente el root_node */
-    ht_tree[i].is_root = true;
-    ht_node_print(&ht_tree[i]);
-
-    printf("the tree is %lu bytes\n", sizeof(struct ht_node) * j);
-    printf("the arena is %d bytes\n", 8192 * 8);
-
-    ht_tree_print(&ht_tree[i]);
+    ht_tree_print(tree.root);
 
     arena_destroy(&ht_arena);
 
