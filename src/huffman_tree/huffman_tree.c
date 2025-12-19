@@ -78,6 +78,53 @@ void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* so
     file_close(&file);
 }
 
+static uint16_t less_freq_node_idx(const struct ht_node* tree,
+                                   const uint16_t tree_size)
+{
+    uint64_t smallest_weight = UINT64_MAX;
+    uint16_t smallest_index = UINT16_MAX;
+    uint16_t index = 0;
+
+    while (index < tree_size) {
+        if ((tree[index].weight < smallest_weight) &&
+            (tree[index].parent_node == -1)) {
+            smallest_weight = tree[index].weight;
+            smallest_index = index;
+        }
+        index++;
+    }
+
+    /*
+    printf("less_freq_node {weight = %lu}-> index = %u, weight = %lu\n",
+           smallest_weight, smallest_index, tree[smallest_index].weight);
+    */
+    return smallest_index;
+}
+
+static uint16_t second_less_freq_node_idx(const struct ht_node* tree,
+                                          const uint16_t tree_size,
+                                          const uint16_t less_freq_node_idx)
+{
+    uint64_t second_smallest_weight = UINT64_MAX;
+    uint16_t smallest_index = UINT16_MAX;
+    uint16_t index = 0;
+
+    while (index < tree_size) {
+        if ((tree[index].weight < second_smallest_weight) &&
+            (tree[index].parent_node == -1) &&
+            (index != less_freq_node_idx)) {
+            second_smallest_weight = tree[index].weight;
+            smallest_index = index;
+        }
+        index++;
+    }
+    /*
+    printf("second_less_freq_node {weight = %lu} -> index = %u, weight = %lu\n",
+           second_smallest_weight, smallest_index, tree[smallest_index].weight);
+    */
+    return smallest_index;
+}
+
 struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                                    const size_t sorted_freq_len,
                                    struct ht_node* tree_buffer)
@@ -94,65 +141,55 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                 .left_node   = -1,
                 .right_node  = -1,
             };
+            //printf("Leaf node: index = %u, weight = %lu\n", leaf_nodes, node.weight);
             tree_buffer[leaf_nodes] = node;
             leaf_nodes++;
         }
     }
 
-    uint64_t i = 0; /* idx of the leaf nodes, they are at the beggining of the array */
-    uint64_t j = (uint64_t)leaf_nodes; /* idx of the rest of the nodes */
     uint16_t nodes_wo_parent = leaf_nodes;
+    uint16_t tree_size = leaf_nodes;
     while (nodes_wo_parent > 1) {
 
-        if ( i == j - 1) {
-            /* TODO: is this unreacheable? */
-            // PRINT_DEBUG(" La i ha llegado al final del arbol\n");
-            ASSERT(0 /* unreacheable? */);
-            break;
-        }
+        const uint16_t first_index = less_freq_node_idx(tree_buffer, tree_size);
+        const uint16_t second_index = second_less_freq_node_idx(tree_buffer, tree_size, first_index);
 
-        struct ht_node* less_frequent_node = &tree_buffer[i];
-        struct ht_node* second_less_frequent_node = &tree_buffer[i + 1];
+        struct ht_node* less_frequent_node = &tree_buffer[first_index];
+        struct ht_node* second_less_frequent_node = &tree_buffer[second_index];
 
-        if (less_frequent_node->weight == 0) {
-            i += 1;
-            continue;
-        }
-        if (second_less_frequent_node->weight == 0) {
-            i += 2;
-            continue;
-        }
-
-        struct ht_node new_node = {
+        const struct ht_node new_node = {
             .c           = (unsigned char)0,
             .weight      = less_frequent_node->weight + second_less_frequent_node->weight,
             .parent_node = -1,
-            .left_node   = (int16_t)i,
-            .right_node  = (int16_t)i + 1,
+            .left_node   = (int16_t)first_index,
+            .right_node  = (int16_t)second_index,
         };
-        /* TODO: Alloc with the arena to make sure it fits, maybe a dynarray its better */
-        tree_buffer[j] = new_node;
-        less_frequent_node->parent_node = (int16_t)j;
-        second_less_frequent_node->parent_node = (int16_t)j;
-        i += 2;
-        j += 1;
+
+        /*
+        printf("New node -> index = %lu, c = 0, weight = %lu, p_n = -1, l_n = %u, r_n = %u\n",
+               j, new_node.weight, new_node.left_node, new_node.right_node);
+        */
+
+        tree_buffer[tree_size] = new_node;
+        less_frequent_node->parent_node = (int16_t)tree_size;
+        second_less_frequent_node->parent_node = (int16_t)tree_size;
         nodes_wo_parent -= 1; /* He creado un parent para dos nodes, pero el parent en si no tiene parent */
+        tree_size += 1;
     }
     /*
      * NOTE: The tree can be as large as 2*(leaf_nodes) - 1
      * x + x/2 + x/4 + x/8 ..... + 1
     */
     /* The index of the no leaf nodes should not be greater that the size of the tree */
-    ASSERT(j <= sorted_freq_len * 2 - 1);
+    ASSERT(tree_size <= sorted_freq_len * 2 - 1);
 
     const struct ht_tree tree = {
         .tree = tree_buffer,
-        .root_idx = (uint16_t)i, /* El ultimo nodo es claramente el root_node */
-        .node_count = (uint16_t)i + 1, /* TODO: los indices no necesitan ser uint64_t */
+        .root_idx = (uint16_t)tree_size - 1, /* El ultimo nodo es claramente el root_node */
+        .node_count = (uint16_t)tree_size, /* TODO: los indices no necesitan ser uint64_t */
     };
 
-    printf("last i = %lu, last j = %lu\n", i, j);
-    printf("the tree is %lu bytes\n", sizeof(struct ht_node) * j);
+    printf("the tree is %lu bytes\n", sizeof(struct ht_node) * tree_size);
 
     return tree;
 }

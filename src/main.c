@@ -16,6 +16,9 @@
  * usar menos memoria RAM
  * A la hora de crear el diccionario usar Depth‑first leaf‑only traversal
  * (es recursivo, pero hay manera de hacerlo iterativo)
+ *
+ * TODO: assert que el weight del root node sea igual que todas las frecuencias
+ * (el numero de u8 del archivo)
 */
 
 #define PRINT_DEBUG(x) printf(x);
@@ -26,6 +29,18 @@ void print_bits_form_uint8_t(const uint8_t byte)
     for (uint32_t i = 0; i < 8; i++) {
         printf("%d", (byte >> (7 - i)) & 1);
     }
+}
+
+static int64_t root_weight_minus_freq(const struct ht_tree* tree,
+                                       const struct char_freq* char_freq,
+                                       const size_t char_freq_count)
+{
+    int64_t root_minus_chars_freqs = (int64_t)tree->tree[tree->root_idx].weight;
+    for (size_t i = 0; i < char_freq_count; i++) {
+        root_minus_chars_freqs -= (int64_t)char_freq[i].freq;
+    }
+
+    return root_minus_chars_freqs;
 }
 
 /* Make some texts to make sure that it keeps working throught the changes */
@@ -52,6 +67,8 @@ int main(int32_t argc, char** argv)
     struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree);
 
     ht_tree_print_without_pointers(&tree, &tree.tree[tree.root_idx]);
+
+    ASSERT(root_weight_minus_freq(&tree, sorted_freq, sorted_freq_len) == 0);
 
     arena_destroy(&ht_arena);
 
