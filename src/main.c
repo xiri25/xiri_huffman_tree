@@ -16,9 +16,6 @@
  * usar menos memoria RAM
  * A la hora de crear el diccionario usar Depth‑first leaf‑only traversal
  * (es recursivo, pero hay manera de hacerlo iterativo)
- *
- * TODO: assert que el weight del root node sea igual que todas las frecuencias
- * (el numero de u8 del archivo)
 */
 
 #define PRINT_DEBUG(x) printf(x);

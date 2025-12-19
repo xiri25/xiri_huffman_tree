@@ -85,6 +85,7 @@ static uint16_t less_freq_node_idx(const struct ht_node* tree,
     uint16_t smallest_index = UINT16_MAX;
     uint16_t index = 0;
 
+    /* TODO: Maybe a little cleanup, + meter las condiciones en el while if posible??? */
     while (index < tree_size) {
         if ((tree[index].weight < smallest_weight) &&
             (tree[index].parent_node == -1)) {
@@ -109,6 +110,7 @@ static uint16_t second_less_freq_node_idx(const struct ht_node* tree,
     uint16_t smallest_index = UINT16_MAX;
     uint16_t index = 0;
 
+    /* TODO: Maybe a little cleanup, + meter las condiciones en el while if posible??? */
     while (index < tree_size) {
         if ((tree[index].weight < second_smallest_weight) &&
             (tree[index].parent_node == -1) &&
