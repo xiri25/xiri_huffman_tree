@@ -7,26 +7,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-static bool _is_root(const struct ht_node* node)
-{
-    if (node->parent_node == -1) return true;
-    return false;
-}
-
-static bool _is_leaf(const struct ht_node* node)
-{
-    if ((node->left_node == -1) && (node->right_node == -1)) return true;
-    return false;
-}
-
 /* TODO: check if the char is printable (or \n \0...) and print it */
 void ht_node_print(const struct ht_tree* tree, const struct ht_node* node)
 {
     char is_root[5] = {};
-    if (_is_root(node)) {
+    if (ht_node_is_root(node)) {
         strcpy(is_root, "root\0");
     }
-    if (_is_leaf(node)) {
+    if (ht_node_is_leaf(node)) {
         strcpy(is_root, "leaf\0");
     }
     printf("%p / %lu -> %d: %lu, p: (%d / %p), l: (%d / %p), r: (%d / %p), %s\n",
@@ -41,10 +29,10 @@ void ht_node_print(const struct ht_tree* tree, const struct ht_node* node)
 void ht_node_print_without_pointers(const struct ht_tree* tree, const struct ht_node* node)
 {
     char is_root[5] = {};
-    if (_is_root(node)) {
+    if (ht_node_is_root(node)) {
         strcpy(is_root, "root\0");
     }
-    if (_is_leaf(node)) {
+    if (ht_node_is_leaf(node)) {
         strcpy(is_root, "leaf\0");
     }
     printf("%lu -> %d: %lu, p: (%d), l: (%d), r: (%d), %s\n",
@@ -127,6 +115,11 @@ static uint16_t second_less_freq_node_idx(const struct ht_node* tree,
     return smallest_index;
 }
 
+/*
+ * TODO: it is generating trees with more than 8 of depth,
+ * take a look at that to see if is there something to do
+ * about it
+ */
 struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                                    const size_t sorted_freq_len,
                                    struct ht_node* tree_buffer)

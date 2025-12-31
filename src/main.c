@@ -1,6 +1,8 @@
+#include "huffman_encoding.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <frequencies.h>
 #include <huffman_tree.h>
@@ -21,13 +23,6 @@
 #define PRINT_DEBUG(x) printf(x);
 // #define PRINT_DEBUG(x)
 
-void print_bits_form_uint8_t(const uint8_t byte)
-{
-    for (uint32_t i = 0; i < 8; i++) {
-        printf("%d", (byte >> (7 - i)) & 1);
-    }
-}
-
 static int64_t root_weight_minus_freq(const struct ht_tree* tree,
                                        const struct char_freq* char_freq,
                                        const size_t char_freq_count)
@@ -39,6 +34,15 @@ static int64_t root_weight_minus_freq(const struct ht_tree* tree,
 
     return root_minus_chars_freqs;
 }
+
+// /* Numero de hilos */
+// #include <unistd.h>
+// static long cpu_cores_online(void)
+// {
+//     long n = sysconf(_SC_NPROCESSORS_ONLN);
+//     if (n < 1) n = 1;
+//     return n;
+// }
 
 /* Make some texts to make sure that it keeps working throught the changes */
 int main(int32_t argc, char** argv)
@@ -59,13 +63,50 @@ int main(int32_t argc, char** argv)
      * x + x/2 + x/4 + x/8 ..... + 1
     */
     const size_t ht_tree_size = sizeof(struct ht_node) * (sorted_freq_len * 2 - 1);
-    struct ht_node* ht_tree = arena_alloc(&ht_arena, ht_tree_size);
+    struct ht_node* ht_tree_buffer = arena_alloc(&ht_arena, ht_tree_size);
 
-    struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree);
+    struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree_buffer);
 
     ht_tree_print_without_pointers(&tree, &tree.tree[tree.root_idx]);
 
     ASSERT(root_weight_minus_freq(&tree, sorted_freq, sorted_freq_len) == 0);
+
+    struct ht_dict* dict = arena_alloc(&ht_arena, sizeof(struct ht_dict) * 256);
+
+    // FIXME: without memset it fails in some files, idk why just in some files
+    memset(dict, 0, 256 * sizeof(struct ht_dict));
+    struct ht_dict current_code = {0};
+
+    build_huffman_dict_recursive(&tree,
+                                 &tree.tree[tree.root_idx],
+                                 dict,
+                                 current_code);
+
+    ht_dict_print_truncated(dict, 256);
+    
+    /*
+     * NOTE: To compare
+     * https://suhaan-bhandary.github.io/Huffman-Coding/
+     */
+    /*
+     * NOTE: This structs are not packet, so maybe a ittle smaller
+     * after serialization
+     */
+    const uint64_t original_size = tree.tree[tree.root_idx].weight * sizeof(uint8_t);
+    const uint8_t tree_header_size = sizeof(struct ht_tree) - sizeof(struct ht_node*);
+    const uint64_t tree_size = tree.node_count * sizeof(struct ht_node);
+    uint64_t compress_size_wo_tree = 0;
+
+    for (uint16_t i = 0; i < 256; i++) {
+        compress_size_wo_tree += dict[i].len;
+    }
+
+    printf("original_size =  %lu, compress_size_wo_tree = %lu, compress_size_w_tree = %lu\n",
+           original_size, compress_size_wo_tree, compress_size_wo_tree + tree_size + tree_header_size);
+
+    printf("arena: offset(used) = %lu Bytes, capacity = %lu Bytes, used(%%) = %lf %%\n",
+           ht_arena.offset, ht_arena.capacity,
+           ((double)ht_arena.offset / (double)ht_arena.capacity) * 100.0);
 
     arena_destroy(&ht_arena);
 

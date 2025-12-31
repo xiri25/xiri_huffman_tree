@@ -6,6 +6,7 @@ SRC_FILES=src/main.c \
 		  src/file/file.c \
 		  src/frequencies/frequencies.c \
 		  src/huffman_tree/huffman_tree.c \
+		  src/huffman_tree/huffman_encoding.c \
 		  src/memory/arena.c
 
 .PHONY: all clean

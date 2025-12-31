@@ -31,5 +31,16 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                                    struct ht_node* tree_buffer);
 void ht_tree_print(const struct ht_tree* tree, const struct ht_node* ht_node);
 void ht_tree_print_without_pointers(const struct ht_tree* tree, const struct ht_node* ht_node);
+static bool ht_node_is_root(const struct ht_node* node)
+{
+    if (node->parent_node == -1) return true;
+    return false;
+}
+
+static bool ht_node_is_leaf(const struct ht_node* node)
+{
+    if ((node->left_node == -1) && (node->right_node == -1)) return true;
+    return false;
+}
 
 #endif // !HUFFMAN_TREE_H

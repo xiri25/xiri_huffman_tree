@@ -15,6 +15,9 @@
  * the suballocations and there is gonna be
  * some chuncks between suballocations
  * bc of memory alignment
+ *
+ * TODO: Este video:
+ * https://www.youtube.com/watch?v=jgiMagdjA1s
 */
 
 #define ALIGNMENT_VALUE 8
