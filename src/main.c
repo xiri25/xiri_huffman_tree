@@ -87,22 +87,38 @@ int main(int32_t argc, char** argv)
     /*
      * NOTE: To compare
      * https://suhaan-bhandary.github.io/Huffman-Coding/
+     * No lo ordena como yo, por lo que los codigos generados
+     * sin distintos, pero equivalentes (creo)
      */
     /*
      * NOTE: This structs are not packet, so maybe a ittle smaller
      * after serialization
      */
-    const uint64_t original_size = tree.tree[tree.root_idx].weight * sizeof(uint8_t);
-    const uint8_t tree_header_size = sizeof(struct ht_tree) - sizeof(struct ht_node*);
-    const uint64_t tree_size = tree.node_count * sizeof(struct ht_node);
-    uint64_t compress_size_wo_tree = 0;
+    const uint64_t original_size_bits = tree.tree[tree.root_idx].weight * sizeof(uint8_t) * 8;
+    const uint8_t tree_header_size_bits = (sizeof(struct ht_tree) - sizeof(struct ht_node*)) * 8;
+    const uint64_t tree_size_bits = tree.node_count * sizeof(struct ht_node) * 8;
+    uint64_t compress_size_wo_tree_bits = 0;
 
     for (uint16_t i = 0; i < 256; i++) {
-        compress_size_wo_tree += dict[i].len;
+        uint64_t repeticions = 0;
+        // XD
+        for (uint16_t j = 0; j < sorted_freq_len; j++) {
+            if (sorted_freq[j].c == i) {
+                repeticions = sorted_freq[j].freq;
+            }
+        }
+        compress_size_wo_tree_bits += dict[i].len * repeticions;
     }
 
-    printf("original_size =  %lu, compress_size_wo_tree = %lu, compress_size_w_tree = %lu\n",
-           original_size, compress_size_wo_tree, compress_size_wo_tree + tree_size + tree_header_size);
+    /*
+     * TODO: Check size of original file
+     * FIXME: El video grande produce todos los codigos con len 8 ??? idk what should happen
+     * FIXME: Cat file | wc -c no siempre coincide con original_size_bits / 8
+     */
+
+    printf("original_size_bits =  %lu, compress_size_wo_tree_bits = %lu, compress_size_w_tree_bits = %lu\n",
+           original_size_bits, compress_size_wo_tree_bits,
+           compress_size_wo_tree_bits + tree_size_bits + tree_header_size_bits);
 
     printf("arena: offset(used) = %lu Bytes, capacity = %lu Bytes, used(%%) = %lf %%\n",
            ht_arena.offset, ht_arena.capacity,

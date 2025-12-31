@@ -23,42 +23,43 @@ void build_huffman_dict_recursive(const struct ht_tree* tree,
                                   struct ht_dict* dict,
                                   struct ht_dict current_code)
 {
-    if (node == NULL) return; // Safety check for null node
+    if (node == NULL) return;
 
-    // Indicate current node
     printf("node idx = %lu -> ", ((uintptr_t)node - (uintptr_t)tree->tree) / (sizeof(struct ht_node)));
     char current_code_code_str[17] = {};
 
     if (ht_node_is_leaf(node)) {
         ASSERT(current_code.len > 0);
         ASSERT(current_code.len < 17);
-        dict[(uint8_t)node->c] = current_code; // Store the current code for the leaf
+        dict[(uint8_t)node->c] = current_code;
         bits_form_uint16_t_to_str(current_code.code, current_code_code_str);
         printf("Leaf node, char = %d, code = %s, len= %d\n", node->c, current_code_code_str, current_code.len);
         return;
     }
 
-    // Traverse left: Add a '0' to current_code
-    current_code.code <<= 1; // Shift left (add a 0)
+    // Traverse left: Add a 0 to current_code
+    current_code.code <<= 1;
     current_code.len++;
     bits_form_uint16_t_to_str(current_code.code, current_code_code_str);
     printf("left was taken, current_code = {.code = %s, .len = %d}\n", current_code_code_str, current_code.len);
     build_huffman_dict_recursive(tree, &tree->tree[node->left_node], dict, current_code);
     ASSERT(current_code.len > 0);
     ASSERT(current_code.len < 17);
-    current_code.len--; // Remove the last bit for backtracking
-    current_code.code >>= 1; // Shift right to revert
+    // Remove the last bit for backtracking -> shift right
+    current_code.len--;
+    current_code.code >>= 1;
 
-    // Traverse right: Add a '1' to current_code
-    current_code.code = (uint8_t)(current_code.code << 1) | 1; // Shift left and add a 1
+    // Traverse right: Add a 1 to current_code
+    current_code.code = (uint8_t)(current_code.code << 1) | 1;
     current_code.len++;
     bits_form_uint16_t_to_str(current_code.code, current_code_code_str);
     printf("right was taken, current_code = {.code = %s, .len = %d}\n", current_code_code_str, current_code.len);
     build_huffman_dict_recursive(tree, &tree->tree[node->right_node], dict, current_code);
     ASSERT(current_code.len > 0);
     ASSERT(current_code.len < 17);
-    current_code.len--; // Remove the last bit for backtracking
-    current_code.code >>= 1; // Shift right to revert
+    // Remove the last bit for backtracking -> shift right
+    current_code.len--;
+    current_code.code >>= 1;
 }
 
 void ht_dict_print_truncated(const struct ht_dict* dict, const uint16_t size)
