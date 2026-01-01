@@ -18,10 +18,10 @@ void bits_form_uint16_t_to_str(const uint16_t bytes, char* str) {
     str[16] = '\0';
 }
 
-void build_huffman_dict_recursive(const struct ht_tree* tree,
-                                  const struct ht_node* node,
-                                  struct ht_dict* dict,
-                                  struct ht_dict current_code)
+static void huffman_dict_build_recursive(const struct ht_tree* tree,
+                                         const struct ht_node* node,
+                                         struct ht_dict* dict,
+                                         struct ht_dict current_code)
 {
     if (node == NULL) return;
 
@@ -42,7 +42,7 @@ void build_huffman_dict_recursive(const struct ht_tree* tree,
     current_code.len++;
     bits_form_uint16_t_to_str(current_code.code, current_code_code_str);
     printf("left was taken, current_code = {.code = %s, .len = %d}\n", current_code_code_str, current_code.len);
-    build_huffman_dict_recursive(tree, &tree->tree[node->left_node], dict, current_code);
+    huffman_dict_build_recursive(tree, &tree->tree[node->left_node], dict, current_code);
     ASSERT(current_code.len > 0);
     ASSERT(current_code.len < 17);
     // Remove the last bit for backtracking -> shift right
@@ -54,12 +54,19 @@ void build_huffman_dict_recursive(const struct ht_tree* tree,
     current_code.len++;
     bits_form_uint16_t_to_str(current_code.code, current_code_code_str);
     printf("right was taken, current_code = {.code = %s, .len = %d}\n", current_code_code_str, current_code.len);
-    build_huffman_dict_recursive(tree, &tree->tree[node->right_node], dict, current_code);
+    huffman_dict_build_recursive(tree, &tree->tree[node->right_node], dict, current_code);
     ASSERT(current_code.len > 0);
     ASSERT(current_code.len < 17);
     // Remove the last bit for backtracking -> shift right
     current_code.len--;
     current_code.code >>= 1;
+}
+
+void huffman_dict_create(const struct ht_tree* tree, struct ht_dict* dict)
+{
+    struct ht_dict current_code = {0};
+    huffman_dict_build_recursive(tree, &tree->tree[tree->root_idx],
+                                 dict, current_code);
 }
 
 void ht_dict_print_truncated(const struct ht_dict* dict, const uint16_t size)

@@ -189,9 +189,7 @@ struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
     return tree;
 }
 
-/* Pass in the root, pre-order traversal (GePeTo lo dice) */
-/* TODO: Arreglar este desastre */
-void ht_tree_print(const struct ht_tree* tree, const struct ht_node* ht_node)
+static void ht_tree_print_recursive(const struct ht_tree* tree, const struct ht_node* ht_node)
 {
     if (ht_node == NULL) return;
 
@@ -200,11 +198,11 @@ void ht_tree_print(const struct ht_tree* tree, const struct ht_node* ht_node)
     if (ht_node->left_node == -1) return;
     if (ht_node->right_node == -1) return;
 
-    ht_tree_print(tree, &tree->tree[ht_node->left_node]);
-    ht_tree_print(tree, &tree->tree[ht_node->right_node]);
+    ht_tree_print_recursive(tree, &tree->tree[ht_node->left_node]);
+    ht_tree_print_recursive(tree, &tree->tree[ht_node->right_node]);
 }
 
-void ht_tree_print_without_pointers(const struct ht_tree* tree, const struct ht_node* ht_node)
+static void ht_tree_print_without_pointers_recursive(const struct ht_tree* tree, const struct ht_node* ht_node)
 {
     if (ht_node == NULL) return;
 
@@ -213,6 +211,16 @@ void ht_tree_print_without_pointers(const struct ht_tree* tree, const struct ht_
     if (ht_node->left_node == -1) return;
     if (ht_node->right_node == -1) return;
 
-    ht_tree_print_without_pointers(tree, &tree->tree[ht_node->left_node]);
-    ht_tree_print_without_pointers(tree, &tree->tree[ht_node->right_node]);
+    ht_tree_print_without_pointers_recursive(tree, &tree->tree[ht_node->left_node]);
+    ht_tree_print_without_pointers_recursive(tree, &tree->tree[ht_node->right_node]);
+}
+
+void ht_tree_print(const struct ht_tree* tree, const bool print_pointers)
+{
+    const struct ht_node* root = &tree->tree[tree->root_idx];
+    if (print_pointers) {
+        ht_tree_print_recursive(tree, root);
+    } else {
+        ht_tree_print_without_pointers_recursive(tree, root);
+    }
 }

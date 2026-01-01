@@ -67,7 +67,7 @@ int main(int32_t argc, char** argv)
 
     struct ht_tree tree = huffman_tree_create(sorted_freq, sorted_freq_len, ht_tree_buffer);
 
-    ht_tree_print_without_pointers(&tree, &tree.tree[tree.root_idx]);
+    ht_tree_print(&tree, false);
 
     ASSERT(root_weight_minus_freq(&tree, sorted_freq, sorted_freq_len) == 0);
 
@@ -75,12 +75,7 @@ int main(int32_t argc, char** argv)
 
     // FIXME: without memset it fails in some files, idk why just in some files
     memset(dict, 0, 256 * sizeof(struct ht_dict));
-    struct ht_dict current_code = {0};
-
-    build_huffman_dict_recursive(&tree,
-                                 &tree.tree[tree.root_idx],
-                                 dict,
-                                 current_code);
+    huffman_dict_create(&tree, dict);
 
     ht_dict_print_truncated(dict, 256);
     

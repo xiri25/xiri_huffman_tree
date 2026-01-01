@@ -29,8 +29,7 @@ void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* so
 struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                                    const size_t sorted_freq_len,
                                    struct ht_node* tree_buffer);
-void ht_tree_print(const struct ht_tree* tree, const struct ht_node* ht_node);
-void ht_tree_print_without_pointers(const struct ht_tree* tree, const struct ht_node* ht_node);
+void ht_tree_print(const struct ht_tree* tree, const bool print_pointers);
 static bool ht_node_is_root(const struct ht_node* node)
 {
     if (node->parent_node == -1) return true;
