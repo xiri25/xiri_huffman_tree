@@ -1,13 +1,10 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Wno-unused-function -Wconversion
-LDFLAGS=-g -O2
+CFLAGS=-Wall -Wextra -Wno-unused-function -Wconversion -march=x86-64-v3 -std=c23
+LDFLAGS=-g -O2 -flto
 INCLUDE_DIRS=src/include/
-SRC_FILES=src/main.c \
-		  src/file/file.c \
-		  src/frequencies/frequencies.c \
-		  src/huffman_tree/huffman_tree.c \
-		  src/huffman_tree/huffman_encoding.c \
-		  src/memory/arena.c
+SRC_DIR=src
+SRC_FILES=$(wildcard $(SRC_DIR)/*/*.c)
+SRC_FILES+=$(SRC_DIR)/main.c
 
 .PHONY: all clean
 
