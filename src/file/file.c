@@ -1,5 +1,6 @@
 #include <file.h>
 #include <ASSERT.h>
+#include <stdint.h>
 
 /* TODO: Maybe return erros */
 /*
@@ -7,6 +8,7 @@
  * tener el seek_ptr , porque struct FILE deberia tener esa
  * informacion
 */
+/* TODO: Probably return the struct */
 void file_open(struct file_t* file, const char* restrict filepath)
 {
     FILE* f = fopen(filepath, "rb");
@@ -26,7 +28,7 @@ void file_open(struct file_t* file, const char* restrict filepath)
     file->seek_ptr = 0;
 }
 
-void file_read_to_uint8_t_buffer(struct file_t* file, uint8_t* restrict buffer, const uint32_t chars_to_read)
+void file_read_to_uint8_t_buffer(struct file_t* file, uint8_t* restrict buffer, const size_t chars_to_read)
 {
     ASSERT(file != NULL);
     ASSERT(buffer != NULL);

@@ -50,7 +50,7 @@ void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* so
     file_open(&file, filepath);
 
     /* TODO: Dont read the entire file at once */
-    const uint32_t chars_to_read = (uint32_t)file.size;
+    const size_t chars_to_read = file.size;
     uint8_t* file_buffer = malloc(sizeof(unsigned char) * chars_to_read);
 
     file_read_to_uint8_t_buffer(&file, file_buffer, chars_to_read);
