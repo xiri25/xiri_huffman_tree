@@ -55,7 +55,7 @@ void huffman_tree_calc_freq_from_file(const struct file_raw_t* file,
     size_t chars_read = 0;
 
     /* TODO: Magic Numbers */
-    const size_t CHUNK_SIZE = 1024 * 1024 * 4;
+    const size_t CHUNK_SIZE = 1024LU * 1024 * 4;
     const size_t min_mmap_size = 4096;
 
     while (chars_read < file->size) {
