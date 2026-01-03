@@ -1,3 +1,4 @@
+#include "file.h"
 #include "huffman_encoding.h"
 #include <stddef.h>
 #include <stdio.h>
@@ -52,7 +53,10 @@ int main(int32_t argc, char** argv)
 
     const size_t sorted_freq_len = UINT8_MAX + 1;
     struct char_freq* sorted_freq = char_freq_buffer_alloc();
-    huffman_tree_calc_freq_from_file(filepath, sorted_freq, (uint16_t)sorted_freq_len);
+
+    struct file_raw_t file = {};
+    ASSERT(file_raw_open(&file, filepath) == 0  /* Error opening the file */);
+    huffman_tree_calc_freq_from_file(&file, sorted_freq, (uint16_t)sorted_freq_len);
 
     char_freq_buffer_print_truncated(sorted_freq, sorted_freq_len);
 
@@ -122,6 +126,8 @@ int main(int32_t argc, char** argv)
     arena_destroy(&ht_arena);
 
     char_freq_buffer_free(sorted_freq);
+
+    file_raw_close(&file);
 
     return 0;
 }

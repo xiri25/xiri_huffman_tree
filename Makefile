@@ -8,13 +8,17 @@ SRC_FILES+=$(SRC_DIR)/main.c
 
 .PHONY: all clean
 
-all: main
+all: main sanitize
 
 main: $(SRC_FILES)
 	$(CC) $(CFLAGS) -I$(INCLUDE_DIRS) -o $@ $^ $(LDFLAGS)
+
+sanitize: $(SRC_FILES)
+	clang $(CFLAGS) -I$(INCLUDE_DIRS) -o $@ $^ $(LDFLAGS) -fsanitize=address,undefined
 
 run:
 	./main
 
 clean:
 	rm -f main
+	rm -f sanitize

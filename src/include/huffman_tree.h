@@ -2,6 +2,7 @@
 #define HUFFMAN_TREE_H
 
 #include <frequencies.h>
+#include <file.h>
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -25,7 +26,9 @@ struct ht_tree {
     uint16_t node_count;
 };
 
-void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* sorted_freq_buffer, const uint16_t buffer_size);
+void huffman_tree_calc_freq_from_file(const struct file_raw_t* file,
+                                      struct char_freq* sorted_freq_buffer,
+                                      const uint16_t buffer_size);
 struct ht_tree huffman_tree_create(const struct char_freq* sorted_freq,
                                    const size_t sorted_freq_len,
                                    struct ht_node* tree_buffer);

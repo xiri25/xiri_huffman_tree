@@ -6,6 +6,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 /* TODO: check if the char is printable (or \n \0...) and print it */
 void ht_node_print(const struct ht_tree* tree, const struct ht_node* node)
@@ -44,26 +46,64 @@ void ht_node_print_without_pointers(const struct ht_tree* tree, const struct ht_
            is_root);
 }
 
-void huffman_tree_calc_freq_from_file(const char* filepath, struct char_freq* sorted_freq_buffer, const uint16_t buffer_size)
+/* TODO: the file should not be closed, if there is an error and the file is closed, return error */
+void huffman_tree_calc_freq_from_file(const struct file_raw_t* file,
+                                      struct char_freq* sorted_freq_buffer,
+                                      const uint16_t buffer_size)
 {
-    struct file_t file = {};
-    file_open(&file, filepath);
-
-    /* TODO: Dont read the entire file at once */
-    const size_t chars_to_read = file.size;
-    uint8_t* file_buffer = malloc(sizeof(unsigned char) * chars_to_read);
-
-    file_read_to_uint8_t_buffer(&file, file_buffer, chars_to_read);
-
     struct char_freq* frequencies = char_freq_buffer_alloc();
-    char_freq_buffer_calculate(frequencies, file_buffer, chars_to_read);
+    size_t chars_read = 0;
+
+    /* TODO: Magic Numbers */
+    const size_t CHUNK_SIZE = 1024 * 1024 * 4;
+    const size_t min_mmap_size = 4096;
+
+    while (chars_read < file->size) {
+        size_t map_size = 0;
+        size_t chars_to_read = 0;
+
+        if ((file->size - chars_read) > CHUNK_SIZE) {
+            map_size = CHUNK_SIZE;
+            chars_to_read = CHUNK_SIZE;
+        } else if (((file->size - chars_read) < CHUNK_SIZE) && ((file->size - chars_read) > min_mmap_size)) {
+            map_size = file->size - chars_read;
+            chars_to_read = file->size - chars_read;
+        } else {
+            map_size = min_mmap_size;
+            chars_to_read = file->size - chars_read;
+        }
+
+        /*
+        printf("file left = %lu\n", file_size - chars_read);
+        printf("map size = %lu\n", map_size);
+        printf("chars to read = %lu\n", chars_to_read);
+        */
+
+        ASSERT(map_size >= 4096);
+        ASSERT(chars_to_read <= map_size);
+
+        /* TODO: Abstract away rhe mmap, for plataform specific code */
+        uint8_t* file_buffer = mmap(NULL, map_size, PROT_READ, MAP_PRIVATE, file->fd, (int64_t)chars_read);
+        if (file_buffer == MAP_FAILED) {
+            perror("mmap error");
+            close(file->fd);
+            return;
+        }
+
+        char_freq_buffer_calculate(frequencies, file_buffer, chars_to_read);
+        chars_read += chars_to_read;
+
+        if (munmap(file_buffer, map_size) == -1) {
+            perror("munmap error");
+            close(file->fd);
+            return;
+        }
+
+        printf("Processed = %f%%\n", (float)chars_read / (float)file->size * 100);
+    }
 
     char_freq_buffer_sort(frequencies, sorted_freq_buffer, buffer_size, SORT_ASC);
-
     char_freq_buffer_free(frequencies);
-
-    free(file_buffer);
-    file_close(&file);
 }
 
 static uint16_t less_freq_node_idx(const struct ht_node* tree,
