@@ -1,12 +1,12 @@
 #ifndef HUFFMAN_TREE_H
 #define HUFFMAN_TREE_H
 
-#include <frequencies.h>
-#include <file.h>
-
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+
+#include <frequencies.h>
+#include <file.h>
 
 /*
  * NOTE: Quizas quiero que sea una packed struct a la hora de serializar

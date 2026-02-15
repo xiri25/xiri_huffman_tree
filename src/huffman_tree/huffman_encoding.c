@@ -4,14 +4,16 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void bits_form_uint8_t_to_str(const uint8_t byte, char* str) {
+void bits_form_uint8_t_to_str(const uint8_t byte, char* str)
+{
     for (uint32_t i = 0; i < 8; i++) {
         str[i] = ((byte >> (7 - i)) & 1) ? '1' : '0';
     }
     str[8] = '\0';
 }
 
-void bits_form_uint16_t_to_str(const uint16_t bytes, char* str) {
+void bits_form_uint16_t_to_str(const uint16_t bytes, char* str)
+{
     for (uint32_t i = 0; i < 16; i++) {
         str[i] = ((bytes >> (15 - i)) & 1) ? '1' : '0';
     }

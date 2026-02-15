@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -Wno-unused-function -Wconversion -march=x86-64-v3 -std=c23
+# Añadir -Wpedantic
+CFLAGS=-Wall -Wextra -Wno-unused-function -Wconversion -march=x86-64-v3 -std=gnu23
 LDFLAGS=-g -O2 -flto
 INCLUDE_DIRS=src/include/
 SRC_DIR=src
