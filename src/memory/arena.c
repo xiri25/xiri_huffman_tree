@@ -27,15 +27,14 @@ static bool is_power_of_2(size_t n)
     return n && !(n & (n - 1));
 }
 
-static size_t ptr_alignment_offset(const void* ptr, const size_t alignment)
+static size_t ptr_alignment_offset(const uintptr_t ptr, const size_t alignment)
 {
-    ASSERT(ptr != NULL);
+    ASSERT(ptr != 0);
     ASSERT(alignment != 0);
     ASSERT(is_power_of_2(alignment));
 
-    uintptr_t u_ptr = (uintptr_t)ptr;
     size_t offset_to_align = 0;
-    size_t current_offset = u_ptr % alignment;
+    size_t current_offset = ptr % alignment;
 
     if (current_offset) {
         offset_to_align = alignment - current_offset;
@@ -75,12 +74,13 @@ static size_t ptr_alignment_offset_v2(const void* ptr, const size_t alignment)
 arena_t arena_create(size_t capacity)
 {
     void* data = malloc(capacity);
-    ASSERT(data != NULL /* malloc failed */);
+    ASSERT(data != NULL);
 
-    size_t need_to_align_offset = ptr_alignment_offset(data, ALIGNMENT_VALUE);
+    size_t need_to_align_offset = 0;
+    need_to_align_offset = ptr_alignment_offset((uintptr_t)data, ALIGNMENT_VALUE);
 
     arena_t a = {
-        .data = data + need_to_align_offset,
+        .data = (void*)((uintptr_t)data + need_to_align_offset),
         .capacity = capacity,
         .offset = need_to_align_offset
     };
@@ -94,7 +94,8 @@ void* arena_alloc(arena_t* arena, size_t size)
     ASSERT(arena != NULL);
     ASSERT(arena->data != NULL);
 
-    size_t need_to_align_offset = ptr_alignment_offset(arena->data + arena->offset, ALIGNMENT_VALUE);
+    const uintptr_t arena_ptr = (uintptr_t)arena->data + (uintptr_t)arena->offset;
+    size_t need_to_align_offset = ptr_alignment_offset(arena_ptr, ALIGNMENT_VALUE);
     size_t total_size = size + need_to_align_offset;
 
     /*

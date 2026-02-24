@@ -20,11 +20,11 @@ void ht_node_print(const struct ht_tree* tree, const struct ht_node* node)
         strcpy(is_root, "leaf\0");
     }
     printf("%p / %lu -> %d: %lu, p: (%d / %p), l: (%d / %p), r: (%d / %p), %s\n",
-           node, ((uintptr_t)node - (uintptr_t)tree->tree) / sizeof(struct ht_node),
+           (void*)node, ((uintptr_t)node - (uintptr_t)tree->tree) / sizeof(struct ht_node),
            node->c, node->weight,
-           node->parent_node, &tree->tree[node->parent_node],
-           node->left_node, &tree->tree[node->left_node],
-           node->right_node, &tree->tree[node->right_node],
+           node->parent_node, (void *)&tree->tree[node->parent_node],
+           node->left_node, (void *)&tree->tree[node->left_node],
+           node->right_node, (void *)&tree->tree[node->right_node],
            is_root);
 }
 
