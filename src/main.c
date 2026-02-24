@@ -1,5 +1,3 @@
-#include "file.h"
-#include "huffman_encoding.h"
 #include <stddef.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -8,7 +6,8 @@
 #include <frequencies.h>
 #include <huffman_tree.h>
 #include <memory/arena.h>
-
+#include <file.h>
+#include <huffman_encoding.h>
 #include <ASSERT.h>
 
 /*

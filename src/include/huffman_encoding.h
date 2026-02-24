@@ -1,9 +1,9 @@
 #ifndef HUFFMAN_ENCODING_H
 #define HUFFMAN_ENCODING_H
 
-#include <huffman_tree.h>
-
 #include <stdint.h>
+
+#include <huffman_tree.h>
 
 struct ht_dict {
     uint16_t code;

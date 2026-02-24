@@ -1,9 +1,9 @@
-#include <memory/arena.h>
-#include <ASSERT.h>
-
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+
+#include <memory/arena.h>
+#include <ASSERT.h>
 
 /*
  * TODO: Create a function that initializes

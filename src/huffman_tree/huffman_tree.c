@@ -1,13 +1,13 @@
-#include <huffman_tree.h>
-#include <file.h>
-#include <frequencies.h>
-#include <ASSERT.h>
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+#include <huffman_tree.h>
+#include <file.h>
+#include <frequencies.h>
+#include <ASSERT.h>
 
 /* TODO: check if the char is printable (or \n \0...) and print it */
 void ht_node_print(const struct ht_tree* tree, const struct ht_node* node)

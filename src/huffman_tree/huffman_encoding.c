@@ -1,8 +1,8 @@
-#include <huffman_encoding.h>
-#include <ASSERT.h>
-
 #include <stdint.h>
 #include <stdio.h>
+
+#include <huffman_encoding.h>
+#include <ASSERT.h>
 
 void bits_form_uint8_t_to_str(const uint8_t byte, char* str) {
     for (uint32_t i = 0; i < 8; i++) {

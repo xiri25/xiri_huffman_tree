@@ -1,9 +1,9 @@
-#include <frequencies.h>
-#include <ASSERT.h>
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#include <frequencies.h>
+#include <ASSERT.h>
 
 static struct char_freq* _char_freq_buffer_alloc(const uint16_t buffer_size)
 {
